@@ -2,6 +2,7 @@ class @Restivus
 
   constructor: (options) ->
     @_routes = []
+    @_errorHandlers = []
     @_config =
       paths: []
       useDefaultAuth: false
@@ -59,6 +60,16 @@ class @Restivus
 
     return this
 
+  addErrorHandler: (type, callback) ->
+    errorHandler = { type, callback }
+    @_errorHandlers.push(errorHandler)
+    return this
+
+  handleError: (error) ->
+    [errorHandler] = _.filter(@_errorHandlers, h -> error instanceof h.type)
+    if errorHandler && errorHandler.callback
+      return errorHandler.callback(error)
+    return null
 
   ###*
     Add endpoints for the given HTTP methods at the given path

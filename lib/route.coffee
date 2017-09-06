@@ -59,8 +59,12 @@ class share.Route
             responseData = self._callEndpoint endpointContext, endpoint
           catch error
             # Do exactly what Iron Router would have done, to avoid changing the API
-            ironRouterSendErrorToResponse(error, req, res);
-            return
+            handeledError = @api.handleError(error);
+            if handeledError
+              responseData = handeledError
+            else
+              ironRouterSendErrorToResponse(error, req, res);
+              return
 
           if responseInitiated
             # Ensure the response is properly completed
@@ -259,7 +263,7 @@ class share.Route
       response.write body
       response.end()
     if statusCode in [401, 403]
-      # Hackers can measure the response time to determine things like whether the 401 response was 
+      # Hackers can measure the response time to determine things like whether the 401 response was
       # caused by bad user id vs bad password.
       # In doing so, they can first scan for valid user ids regardless of valid passwords.
       # Delay by a random amount to reduce the ability for a hacker to determine the response time.
